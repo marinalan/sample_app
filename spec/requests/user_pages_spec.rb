@@ -65,10 +65,10 @@ describe "User Pages" do
 
     describe "with valid information" do
       before do
-        fill_in "Name",            with: "Example User"
-        fill_in "Email",           with: "user@example.com"
-        fill_in "Password",        with: "foobar"
-        fill_in "Confirmation",    with: "foobar"
+        fill_in "Name",                with: "Example User"
+        fill_in "Email",               with: "user@example.com"
+        fill_in "Password",            with: "foobar"
+        fill_in "Confirm Password",    with: "foobar"
       end
 
       it "should create a user" do
@@ -122,5 +122,37 @@ describe "User Pages" do
       specify { expect(user.reload.name).to eq new_name }
       specify { expect(user.reload.email).to eq new_email }  
     end
+
+    describe "forbidden attributes" do
+      let(:params) do
+        { user: {admin: true, password: user.password,
+                 password_confirmation: user.password } }
+      end
+      before do
+        sign_in user, no_capybara: true
+        patch user_path(user), params
+      end
+      specify { expect(user.reload).not_to be_admin }
+    end
+
+    describe "prevent create for signed in users" do
+      let(:params) do
+        { user: {name: 'Other name', email: 'marina+other@marina_mac.local', 
+                 password: "foobar", password_confirmation: "foobar" } }
+      end
+      before do
+        sign_in user, no_capybara: true
+        post users_path, params
+      end
+      specify { expect(response).to redirect_to(root_url) }
+    end
+
+    # describe "prevent new for signed in users" do
+    #   before do
+    #     sign_in user, no_capybara: true
+    #     visit new_user_path
+    #   end
+    #   expect(page).to have_content('Welcome to the Sample App')
+    # end
   end
 end

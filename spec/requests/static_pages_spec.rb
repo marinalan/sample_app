@@ -46,6 +46,10 @@ describe "Static Pages" do
           expect(page).to have_selector("li##{item.id}", text: item.content)
         end
       end
+
+      it "should show microposts count" do
+        expect(page).to have_selector("div.row aside.span4 section span", text: "micropost".pluralize(user.feed.count))
+      end
     end
   end
 
